@@ -1,5 +1,13 @@
-import { spawn, type ChildProcess } from "child_process";
+import { spawn, type ChildProcess, execSync } from "child_process";
 import net from "net";
+
+const NODE_BIN = (() => {
+  try {
+    return execSync("which node").toString().trim();
+  } catch {
+    return "/home/ubuntu/.nvm/versions/node/v20.20.2/bin/node";
+  }
+})();
 
 export async function getFreePortAndRelease(): Promise<{ port: number; release: () => void }> {
   return new Promise((resolve, reject) => {
@@ -24,41 +32,44 @@ export async function getFreePortAndRelease(): Promise<{ port: number; release: 
 const isLinuxSandbox = process.platform === "linux" && process.env.NODE_ENV === "production";
 
 export function spawnSandboxed(cwd: string, port: number): ChildProcess {
-  const env = { ...process.env, PORT: String(port), NODE_ENV: "grading" };
+  const env = {
+    ...process.env,
+    PORT: String(port),
+    NODE_ENV: "grading",
+    PATH: process.env.PATH ?? "/usr/local/bin:/usr/bin:/bin",
+  };
 
   if (isLinuxSandbox) {
     return spawn(
       "systemd-run",
       [
-        "--uid=sandboxuser",
+        "--user",
         "--scope",
-        "-p", "MemoryMax=256M",
+        "-p", "MemoryMax=128M",
         "-p", "CPUQuota=50%",
         "-p", "TasksMax=30",
         "--",
-        "node", "--max-old-space-size=128", "server.js",
+        NODE_BIN, "--max-old-space-size=128", "server.js",
       ],
-      { cwd, env }
+      { cwd, env, stdio: ["ignore", "pipe", "pipe"] }
     );
   }
 
-
-  return spawn("node", ["server.js"], { cwd, env });
+  return spawn(NODE_BIN, ["server.js"], { cwd, env });
 }
 
 export async function waitForReady(
   port: number,
-  maxAttempts = 50,   // was 30
-  intervalMs = 300    // was 200
+  maxAttempts = 50,
+  intervalMs = 300
 ): Promise<void> {
   for (let i = 0; i < maxAttempts; i++) {
     try {
       const res = await fetch(`http://127.0.0.1:${port}/health`, {
-        signal: AbortSignal.timeout(1500), // was 1000
+        signal: AbortSignal.timeout(1500),
       });
       if (res.ok) return;
-    } catch {
-    }
+    } catch {}
     await new Promise((r) => setTimeout(r, intervalMs));
   }
   throw new Error("Server did not become ready in time");
