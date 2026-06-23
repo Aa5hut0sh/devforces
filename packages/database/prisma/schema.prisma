@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  User
+  Admin
+}
+
+enum SubmissionStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+  ERROR
+}
+
+model User {
+  id          String        @id @default(uuid())
+  name        String
+  email       String        @unique
+  password    String
+  role        Role          @default(User)
+  submissions Submission[]
+  leaderboard Leaderboard[]
+  createdAt   DateTime      @default(now())
+}
+
+model Contest {
+  id                        String                      @id @default(uuid())
+  title                     String
+  description               String?
+  boilerplateId             String                     
+  startTime                 DateTime
+  endTime                   DateTime
+  leaderboard               Leaderboard[]
+  contestToChallengeMapping ContestToChallengeMapping[]
+  createdAt                 DateTime                    @default(now())
+}
+
+model Challenge {
+  id                        String                      @id @default(uuid())
+  title                     String
+  notionDocId               String
+  maxPoints                 Int
+  editableFiles             Json                        
+  testSpec                  Json
+  timeLimitSeconds          Int                         @default(15)
+  contestToChallengeMapping ContestToChallengeMapping[]
+  createdAt                 DateTime                    @default(now())
+}
+
+model ContestToChallengeMapping {
+  id          String       @id @default(uuid())
+  contestId   String
+  challengeId String
+  index       Int                                     
+  contest     Contest      @relation(fields: [contestId], references: [id])
+  challenge   Challenge    @relation(fields: [challengeId], references: [id])
+  submissions Submission[]
+
+  @@unique([contestId, challengeId])
+  @@unique([contestId, index])
+}
+
+model Submission {
+  id                          String                    @id @default(uuid())
+  files                       Json  
+  fullFiles                   Json                 
+  status                      SubmissionStatus          @default(PENDING)
+  points                      Int                       @default(0)
+  testResults                 Json?
+  contestToChallengeMappingId String
+  contestToChallengeMapping   ContestToChallengeMapping @relation(fields: [contestToChallengeMappingId], references: [id])
+  userId                      String
+  user                        User                      @relation(fields: [userId], references: [id])
+  createdAt                   DateTime                  @default(now())
+  gradedAt                    DateTime?
+
+  @@index([userId])
+  @@index([contestToChallengeMappingId])
+}
+
+model Leaderboard {
+  id        String   @id @default(uuid())
+  contestId String
+  userId    String
+  score     Int      @default(0)
+  rank      Int
+  contest   Contest  @relation(fields: [contestId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  updatedAt DateTime @updatedAt
+
+  @@unique([contestId, userId])
+}

@@ -1,102 +1,77 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+"use client";
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { GridScan } from "@/components/background";
+import Link from "next/link";
 
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
+export default function RootPage() {
+  const { isLoading, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  // Optional: If you want to auto-redirect authenticated users to the contests page
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     router.push("/contests");
+  //   }
+  // }, [isAuthenticated, router]);
 
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
-
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
+    <main className="relative min-h-screen bg-[#09050d] overflow-hidden flex flex-col items-center justify-center">
+      
+      {/* Background Layer: GridScan */}
+      <div className="absolute inset-0 z-0 w-full h-full">
+        <GridScan
+          sensitivity={0.55}
+          lineThickness={1}
+          linesColor="#2F293A"
+          gridScale={0.1}
+          scanColor="#FF9FFC"
+          scanOpacity={0.4}
+          enablePost
+          bloomIntensity={0.6}
+          chromaticAberration={0.002}
+          noiseIntensity={0.01}
+          lineJitter={0.1}
+          scanGlow={0.5}
+          scanSoftness={2}
+          enableWebcam={false}
+          showPreview={false}
         />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+      </div>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+      {/* Hero Content Layer */}
+      <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-4xl w-full">
+        
+        {/* Version Badge */}
+        <div className="bg-[#1a1122]/80 border border-[#4d2562]/50 rounded-full pl-1.5 pr-4 py-1.5 flex items-center gap-3 mb-8 backdrop-blur-md shadow-lg">
+          <span className="text-sm font-medium ml-2 text-zinc-300">
+              Build fast. Ship faster.
+          </span>
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
-    </div>
+
+        {/* Main Headline */}
+        <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-10 leading-[1.1]">
+          Hold on, scanning for <br /> developers who build.
+        </h1>
+
+        {/* Call to Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <Link
+            href="/contests"
+            className="w-full sm:w-auto bg-white text-black px-8 py-3.5 rounded-xl font-semibold hover:bg-zinc-200 transition-colors active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+          >
+            Get started
+          </Link>
+          <Link
+            href="#about"
+            className="w-full sm:w-auto bg-[#1a1122]/80 border border-[#4d2562]/40 text-white px-8 py-3.5 rounded-xl font-medium hover:bg-[#251830] transition-colors backdrop-blur-sm active:scale-95"
+          >
+            Learn more
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 }

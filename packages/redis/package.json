@@ -1,0 +1,25 @@
+{
+  "name": "@repo/redis",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./client": "./client.ts",
+    "./queue": "./queue.ts",
+    "./channels": "./channels.ts"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "bullmq": "^5.79.0",
+    "ioredis": "^5.11.1"
+  },
+  "resolutions": {
+    "ioredis": "5.11.1"
+  }
+}

@@ -1,0 +1,50 @@
+module.exports = {
+  apps: [
+    {
+      name: "devforces-api",
+      cwd: "/home/ubuntu/devforces/apps/api",
+      script: "bun",
+      args: "run src/index.ts",
+      env: {
+        NODE_ENV: "production",
+      },
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "512M",
+      error_file: "/home/ubuntu/logs/api-error.log",
+      out_file: "/home/ubuntu/logs/api-out.log",
+    },
+    {
+      name: "devforces-worker",
+      cwd: "/home/ubuntu/devforces/apps/worker",
+      script: "bun",
+      args: "run src/index.ts",
+      env: {
+        NODE_ENV: "production",
+      },
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "300M",
+      error_file: "/home/ubuntu/logs/worker-error.log",
+      out_file: "/home/ubuntu/logs/worker-out.log",
+    },
+    {
+      name: "devforces-web",
+      cwd: "/home/ubuntu/devforces/apps/web",
+      script: "bun",
+      args: "run start",
+      env: {
+        NODE_ENV: "production",
+        PORT: "3000",
+      },
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: "512M",
+      error_file: "/home/ubuntu/logs/web-error.log",
+      out_file: "/home/ubuntu/logs/web-out.log",
+    },
+  ],
+};

@@ -1,0 +1,19 @@
+{
+  "name": "worker",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@repo/boilerplates": "*",
+    "@repo/db": "*",
+    "@repo/redis": "*",
+    "@types/node": "^26.0.0",
+    "bullmq": "^5.79.1"
+  }
+}
