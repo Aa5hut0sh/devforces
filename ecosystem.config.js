@@ -4,7 +4,7 @@ module.exports = {
       name: "devforces-api",
       cwd: "/home/ubuntu/devforces/apps/api",
       script: "bun",
-      args: "run src/index.ts",
+      args: "run index.ts",
       env: {
         NODE_ENV: "production",
       },
@@ -19,7 +19,7 @@ module.exports = {
       name: "devforces-worker",
       cwd: "/home/ubuntu/devforces/apps/worker",
       script: "bun",
-      args: "run src/index.ts",
+      args: "run index.ts",
       env: {
         NODE_ENV: "production",
       },
