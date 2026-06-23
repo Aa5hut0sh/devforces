@@ -17,6 +17,7 @@
     "next": "16.2.9",
     "notion-client": "^7.10.0",
     "postprocessing": "^6.39.1",
+    "prismjs": "^1.30.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hot-toast": "^2.6.0",
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/prismjs": "^1.26.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.184.1",

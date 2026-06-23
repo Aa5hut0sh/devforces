@@ -3,7 +3,12 @@
 import { useEffect, useState } from 'react';
 import { NotionRenderer } from 'react-notion-x';
 import 'react-notion-x/src/styles.css';
+import 'prismjs/themes/prism-tomorrow.css';
+import dynamic from 'next/dynamic';
 
+const Code = dynamic(() =>
+  import('react-notion-x/build/third-party/code').then((m) => m.Code)
+);
 
 export default function NotionDoc({ pageId }: { pageId: string }) {
   const [recordMap, setRecordMap] = useState<any>(null);
@@ -86,6 +91,9 @@ export default function NotionDoc({ pageId }: { pageId: string }) {
         recordMap={recordMap} 
         fullPage={false} 
         darkMode={true} 
+        components={{
+          Code,
+        }}
       />
     </div>
   );
