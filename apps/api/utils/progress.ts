@@ -23,12 +23,15 @@ export async function getCurrentMapping(contestId: string, userId: string) {
 }
 
 export async function buildAccumulatedFiles(contestId: string, userId: string) {
-  const contest = await prisma.contest.findUnique({ where: { id: contestId } });
-  if(!contest) throw new Error(`Contest ${contestId} not found`);
+  const contest = await prisma.contest.findUniqueOrThrow({ where: { id: contestId } });
   const files = await loadBoilerplateFiles(contest.boilerplateId);
 
   const passedSubmissions = await prisma.submission.findMany({
-    where: { userId, status: SubmissionStatus.PASSED, contestToChallengeMapping: { contestId } },
+    where: {
+      userId,
+      status: SubmissionStatus.PASSED,
+      contestToChallengeMapping: { contestId },
+    },
     include: { contestToChallengeMapping: true },
     orderBy: { contestToChallengeMapping: { index: "asc" } },
   });
@@ -36,5 +39,30 @@ export async function buildAccumulatedFiles(contestId: string, userId: string) {
   for (const s of passedSubmissions) {
     Object.assign(files, s.files as Record<string, string>);
   }
-  return files; 
+
+  const mappings = await prisma.contestToChallengeMapping.findMany({
+    where: { contestId },
+    orderBy: { index: "asc" },
+  });
+
+  const passedIds = new Set(passedSubmissions.map((s) => s.contestToChallengeMappingId));
+  const currentMapping = mappings.find((m) => !passedIds.has(m.id));
+
+  if (currentMapping) {
+    const latestAttempt = await prisma.submission.findFirst({
+      where: {
+        userId,
+        contestToChallengeMappingId: currentMapping.id,
+        status: { in: [SubmissionStatus.FAILED, SubmissionStatus.ERROR] },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (latestAttempt) {
+
+      Object.assign(files, latestAttempt.files as Record<string, string>);
+    }
+  }
+
+  return files;
 }

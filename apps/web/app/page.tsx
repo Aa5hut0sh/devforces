@@ -64,12 +64,7 @@ export default function RootPage() {
           >
             Get started
           </Link>
-          <Link
-            href="#about"
-            className="w-full sm:w-auto bg-[#1a1122]/80 border border-[#4d2562]/40 text-white px-8 py-3.5 rounded-xl font-medium hover:bg-[#251830] transition-colors backdrop-blur-sm active:scale-95"
-          >
-            Learn more
-          </Link>
+          
         </div>
       </div>
     </main>

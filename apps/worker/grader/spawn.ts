@@ -3,9 +3,15 @@ import net from "net";
 
 const NODE_BIN = (() => {
   try {
-    return execSync("which node").toString().trim();
+    if (process.platform === "win32") {
+      const result = execSync("where node", { encoding: "utf-8" });
+      return (result.split("\n")[0] ?? "node").trim();
+    }
+    return execSync("which node", { encoding: "utf-8" }).trim();
   } catch {
-    return "/home/ubuntu/.nvm/versions/node/v20.20.2/bin/node";
+    return process.platform === "win32"
+      ? "node"
+      : "/home/ubuntu/.nvm/versions/node/v20.20.2/bin/node";
   }
 })();
 

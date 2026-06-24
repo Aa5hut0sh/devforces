@@ -9,7 +9,6 @@ import { prepareSubmissionDir, cleanupSubmissionDir } from "./prepareDir";
 import { getFreePortAndRelease, spawnSandboxed, waitForReady } from "./spawn";
 import { runTestSpec, type TestCase } from "./testRunner";
 import { toJsonValue } from "./toJson";
-import fs from "fs/promises";
 
 function killProcess(proc: ChildProcess) {
   try {
@@ -87,28 +86,42 @@ export async function gradeSubmission(submissionId: string) {
       challenge.timeLimitSeconds * 1000 + 20_000,
     );
 
-    const status = result.allPassed
-      ? SubmissionStatus.PASSED
-      : SubmissionStatus.FAILED;
+    const earnedPoints = result.totalPoints;
+    const allPassed = result.allPassed;
 
     await prisma.submission.update({
       where: { id: submissionId },
       data: {
-        status,
-        points: result.totalPoints,
+        status: allPassed ? SubmissionStatus.PASSED : SubmissionStatus.FAILED,
+        points: earnedPoints,
         testResults: toJsonValue(result.results),
         gradedAt: new Date(),
       },
     });
 
-    if (status === SubmissionStatus.PASSED) {
-      await incrementLeaderboardScore(
-        contest.id,
-        submission.userId,
-        result.totalPoints,
-      );
-      const snapshot = await getLeaderboardSnapshot(contest.id);
-      await publishLeaderboardUpdate(contest.id, snapshot);
+    if (earnedPoints > 0) {
+      const previousBest = await prisma.submission.findFirst({
+        where: {
+          userId: submission.userId,
+          contestToChallengeMappingId: submission.contestToChallengeMappingId,
+          status: { in: [SubmissionStatus.PASSED, SubmissionStatus.FAILED] },
+          id: { not: submissionId },
+        },
+        orderBy: { points: "desc" },
+      });
+
+      const previousPoints = previousBest?.points ?? 0;
+      const pointsDelta = earnedPoints - previousPoints;
+
+      if (pointsDelta > 0) {
+        await incrementLeaderboardScore(
+          contest.id,
+          submission.userId,
+          pointsDelta,
+        );
+        const snapshot = await getLeaderboardSnapshot(contest.id);
+        await publishLeaderboardUpdate(contest.id, snapshot);
+      }
     }
   } catch (err) {
     await prisma.submission.update({

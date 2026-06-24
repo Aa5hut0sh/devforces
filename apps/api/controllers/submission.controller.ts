@@ -35,7 +35,7 @@ export const submitChallenge = async (req: Request, res: Response, next: NextFun
       return res.status(400).json({ success: false, message: `Missing files: ${missing.join(", ")}` });
     }
 
-    // snapshot at submit time — boilerplate + every previously passed challenge + this attempt
+
     const accumulated = await buildAccumulatedFiles(contestId, userId);
     const fullFiles = { ...accumulated, ...parse.data.files };
 
@@ -102,6 +102,39 @@ export const getSubmissionStatus = async (req: Request, res: Response, next: Nex
     }
 
     res.json({ success: true, submission });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMySubmissions = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { contestId } = req.params as { contestId: string };
+    const userId = req.userId!;
+
+    const currentMapping = await getCurrentMapping(contestId, userId);
+    if (!currentMapping) {
+      return res.json({ success: true, submissions: [] });
+    }
+
+    const submissions = await prisma.submission.findMany({
+      where: {
+        userId,
+        contestToChallengeMappingId: currentMapping.id,
+      },
+      select: {
+        id: true,
+        status: true,
+        points: true,
+        testResults: true,
+        createdAt: true,
+        gradedAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 20, // last 20 attempts
+    });
+
+    res.json({ success: true, submissions });
   } catch (err) {
     next(err);
   }

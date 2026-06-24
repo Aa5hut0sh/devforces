@@ -40,7 +40,7 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          <Link href="/contests" className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
+          <Link href="/contests" className="text-md font-medium text-zinc-300 hover:text-white transition-colors">
             Contests
           </Link>
         </div>
@@ -54,7 +54,7 @@ export default function Navbar() {
                 </Link>
               )}
               <span className="text-sm font-medium text-zinc-300">
-                {user?.name}
+                {user?.name.split(" ")[0] || user?.email.split("@")[0]}
               </span>
               <button
                 onClick={handleLogout}

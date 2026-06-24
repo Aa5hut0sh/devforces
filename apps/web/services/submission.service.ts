@@ -4,6 +4,8 @@ import type {
   SubmitPayload,
   SubmitResponse,
   SubmissionStatusResponse,
+  TestResult,
+  SubmissionStatus,
 } from "@/lib/types";
 
 export const submissionService = {
@@ -32,6 +34,28 @@ export const submissionService = {
     );
     const { success, ...progress } = data;
     return progress;
+  },
+
+  async getHistory(contestId: string): Promise<{
+    id: string;
+    status: SubmissionStatus;
+    points: number;
+    testResults: TestResult[] | null;
+    createdAt: string;
+    gradedAt: string | null;
+  }[]> {
+    const { data } = await api.get<{
+      success: boolean;
+      submissions: {
+        id: string;
+        status: SubmissionStatus;
+        points: number;
+        testResults: TestResult[] | null;
+        createdAt: string;
+        gradedAt: string | null;
+      }[];
+    }>(`/submissions/${contestId}/history`);
+    return data.submissions;
   },
 
   async pollUntilDone(

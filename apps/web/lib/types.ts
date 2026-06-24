@@ -217,3 +217,11 @@ export interface AdminChallenge {
   timeLimitSeconds: number;
   createdAt: string;
 }
+
+
+export interface ContestDetail extends Contest {
+  contestToChallengeMapping: {
+    index: number;
+    challenge: Pick<Challenge, "id" | "title" | "maxPoints" | "editableFiles">;
+  }[];
+}

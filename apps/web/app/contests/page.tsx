@@ -29,16 +29,15 @@ function ContestCard({ contest }: { contest: Contest }) {
 
   return (
     <Link
-      href={isEnded ? "#" : `/contests/${contest.id}`}
-      onClick={(e) => isEnded && e.preventDefault()}
+      href={`/contests/${contest.id}`} // ALWAYS route to the page
       className={`group block backdrop-blur-md border rounded-2xl p-6 transition-all duration-300 ${
         isEnded
-          ? "bg-[#110a17]/40 border-zinc-800/40 opacity-60 cursor-not-allowed"
+          ? "bg-[#0a0a0c]/60 border-zinc-800/60 hover:bg-[#110a17]/80 hover:border-zinc-700/80 hover:-translate-y-0.5" // Archived but interactive
           : "bg-[#1a1122]/60 border-[#4d2562]/40 hover:border-[#FF9FFC]/50 hover:bg-[#251830]/80 hover:shadow-[0_0_25px_rgba(255,159,252,0.1)] hover:-translate-y-1"
       }`}
     >
       <div className="flex items-start justify-between gap-4 mb-4">
-        <h2 className="font-semibold text-zinc-100 group-hover:text-white transition text-lg tracking-tight leading-snug">
+        <h2 className={`font-semibold transition text-lg tracking-tight leading-snug ${isEnded ? "text-zinc-400 group-hover:text-zinc-200" : "text-zinc-100 group-hover:text-white"}`}>
           {contest.title}
         </h2>
         <span className={`shrink-0 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border tracking-wider ${STATUS_STYLES[status]}`}>
@@ -47,14 +46,14 @@ function ContestCard({ contest }: { contest: Contest }) {
       </div>
 
       {contest.description && (
-        <p className="text-sm text-zinc-400 mb-6 line-clamp-2 leading-relaxed">
+        <p className="text-sm text-zinc-500 mb-6 line-clamp-2 leading-relaxed">
           {contest.description}
         </p>
       )}
 
-      <div className="flex items-center gap-3 text-xs font-medium text-zinc-500 bg-black/20 w-fit px-3 py-1.5 rounded-lg border border-white/5">
+      <div className="flex items-center gap-3 text-xs font-medium text-zinc-600 bg-black/30 w-fit px-3 py-1.5 rounded-lg border border-white/5">
         <span>Starts {formatDate(contest.startTime)}</span>
-        <span className="text-zinc-700">|</span>
+        <span className="text-zinc-800">|</span>
         <span>Ends {formatDate(contest.endTime)}</span>
       </div>
     </Link>

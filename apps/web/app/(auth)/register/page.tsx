@@ -115,7 +115,9 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <GoogleButton />
+      <div style={{ width: "100%", minHeight: "44px" }} className="flex justify-center">
+            <GoogleButton />
+            </div>
     </div>
   );
 }
