@@ -25,7 +25,7 @@ import {
   VscFile,
   VscChevronDown,
   VscHistory,
-  VscCheck,      
+  VscCheck,
   VscCloudUpload,
 } from "react-icons/vsc";
 import NotionDoc from "@/components/NotionDoc";
@@ -38,15 +38,15 @@ import FileTree from "@/components/FileTree";
 import TestResults from "@/components/TestResults";
 import SubmissionHistory from "@/components/SubmissionHistory";
 
-
-
-
-
 function formatTime(ms: number) {
   if (ms <= 0) return "00:00:00";
   const totalSeconds = Math.floor(ms / 1000);
-  const h = Math.floor(totalSeconds / 3600).toString().padStart(2, "0");
-  const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, "0");
+  const h = Math.floor(totalSeconds / 3600)
+    .toString()
+    .padStart(2, "0");
+  const m = Math.floor((totalSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
   const s = (totalSeconds % 60).toString().padStart(2, "0");
   return `${h}:${m}:${s}`;
 }
@@ -60,9 +60,9 @@ export default function ContestWorkspacePage() {
   const pathname = usePathname();
 
   // ── State
-  const [activeTab, setActiveTab] = useState<"code" | "docs" | "leaderboard" | "history">(
-    "code",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "code" | "docs" | "leaderboard" | "history"
+  >("code");
   const [progress, setProgress] = useState<Progress | null>(null);
   const [files, setFiles] = useState<Record<string, string>>({});
   const [selectedFile, setSelectedFile] = useState("");
@@ -76,25 +76,32 @@ export default function ContestWorkspacePage() {
   const [error, setError] = useState("");
   const [userNames, setUserNames] = useState<Record<string, string>>({});
 
-  const [history, setHistory] = useState<Awaited<ReturnType<typeof submissionService.getHistory>>>([]);
+  const [history, setHistory] = useState<
+    Awaited<ReturnType<typeof submissionService.getHistory>>
+  >([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"Saving..." | "Saved locally" | "">("");
+  const [saveStatus, setSaveStatus] = useState<
+    "Saving..." | "Saved locally" | ""
+  >("");
 
-  const [contestDetails, setContestDetails] = useState<ContestDetail | null>(null);
+  const [contestDetails, setContestDetails] = useState<ContestDetail | null>(
+    null,
+  );
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-
-  
 
   useEffect(() => {
     if (!contestId || !isAuthenticated) return;
-    api.get(`/contests/${contestId}`).then((res) => {
-      setContestDetails(res.data.contest || res.data);
-    }).catch(() => {});
+    api
+      .get(`/contests/${contestId}`)
+      .then((res) => {
+        setContestDetails(res.data.contest || res.data);
+      })
+      .catch(() => {});
   }, [contestId, isAuthenticated]);
 
   useEffect(() => {
     if (!contestDetails?.endTime) return;
-    
+
     const updateTimer = () => {
       const end = new Date(contestDetails.endTime).getTime();
       const diff = end - Date.now();
@@ -110,11 +117,14 @@ export default function ContestWorkspacePage() {
     if (!contestId || Object.keys(editedFiles).length === 0) return;
 
     setSaveStatus("Saving...");
-    
+
     const timeoutId = setTimeout(() => {
-      localStorage.setItem(`devforces_draft_${contestId}`, JSON.stringify(editedFiles));
+      localStorage.setItem(
+        `devforces_draft_${contestId}`,
+        JSON.stringify(editedFiles),
+      );
       setSaveStatus("Saved locally");
-      
+
       setTimeout(() => setSaveStatus(""), 3000);
     }, 1000); // 1-second debounce
 
@@ -164,16 +174,16 @@ export default function ContestWorkspacePage() {
           try {
             const parsedDraft = JSON.parse(savedDraft);
             let hasRecoveredData = false;
-            
+
             for (const path of p.currentChallenge.editableFiles) {
               if (parsedDraft[path] && parsedDraft[path] !== initial[path]) {
                 initial[path] = parsedDraft[path];
                 hasRecoveredData = true;
               }
             }
-            
+
             if (hasRecoveredData) {
-              setFiles(prev => ({ ...prev, ...initial })); 
+              setFiles((prev) => ({ ...prev, ...initial }));
               toast.success("Recovered your unsaved draft.");
             }
           } catch (e) {
@@ -182,7 +192,9 @@ export default function ContestWorkspacePage() {
         }
 
         setEditedFiles(initial);
-        setSelectedFile(p.currentChallenge.editableFiles[0] ?? Object.keys(p.files)[0] ?? "");
+        setSelectedFile(
+          p.currentChallenge.editableFiles[0] ?? Object.keys(p.files)[0] ?? "",
+        );
       } else {
         setSelectedFile(Object.keys(p.files)[0] ?? "");
       }
@@ -203,8 +215,10 @@ export default function ContestWorkspacePage() {
     try {
       const h = await submissionService.getHistory(contestId);
       setHistory(h);
-    } catch {} 
-    finally { setHistoryLoading(false); }
+    } catch {
+    } finally {
+      setHistoryLoading(false);
+    }
   }, [contestId]);
 
   useEffect(() => {
@@ -229,14 +243,12 @@ export default function ContestWorkspacePage() {
     },
   });
 
-
   const handleSubmit = async () => {
     if (!progress?.currentChallenge || submitting) return;
 
     setSubmitting(true);
     setLastResult(null);
     setError("");
-
 
     const toastId = toast.loading("Executing test cases...");
 
@@ -326,11 +338,88 @@ export default function ContestWorkspacePage() {
     return (
       <div className="min-h-screen bg-[#09050d] flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p className="text-2xl font-bold text-white">Contest hasn't started yet</p>
-          <p className="text-zinc-400 font-mono text-sm">
-            Starts in {formatTime(new Date(contestDetails.startTime).getTime() - Date.now())}
+          <p className="text-2xl font-bold text-white">
+            Contest hasn't started yet
           </p>
-          <Link href="/contests" className="text-violet-400 text-sm hover:underline">
+          <p className="text-zinc-400 font-mono text-sm">
+            Starts in{" "}
+            {formatTime(
+              new Date(contestDetails.startTime).getTime() - Date.now(),
+            )}
+          </p>
+          <Link
+            href="/contests"
+            className="text-violet-400 text-sm hover:underline"
+          >
+            ← Back to contests
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (contestDetails && new Date() > new Date(contestDetails.endTime)) {
+    return (
+      <div className="min-h-screen bg-[#09050d] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-2xl font-bold text-white">Contest has ended</p>
+          <p className="text-zinc-500 font-mono text-sm">
+            This contest closed on{" "}
+            {new Date(contestDetails.endTime).toLocaleDateString()}
+          </p>
+
+          <div className="bg-[#110a17]/60 border border-[#4d2562]/40 rounded-2xl overflow-hidden backdrop-blur-md">
+            <div className="grid grid-cols-[3rem_1fr_4rem] gap-4 px-6 py-4 border-b border-zinc-800/60 text-xs font-mono text-zinc-500 uppercase tracking-widest">
+              <span>Rank</span>
+              <span>Developer</span>
+              <span className="text-right">Score</span>
+            </div>
+
+            <div className="divide-y divide-zinc-800/40 max-h-[520px] overflow-y-auto">
+              {leaderboard.length === 0 ? (
+                <p className="text-sm text-zinc-500 text-center py-12">
+                  No submissions.
+                </p>
+              ) : (
+                leaderboard.map((e) => (
+                  <div
+                    key={e.userId}
+                    className={`grid grid-cols-[3rem_1fr_4rem] gap-4 px-6 py-4 items-center transition-colors ${
+                      e.userId === user?.id
+                        ? "bg-[#FF9FFC]/5"
+                        : "hover:bg-white/5"
+                    }`}
+                  >
+                    <span
+                      className={`text-sm font-mono font-bold ${
+                        e.rank === 1
+                          ? "text-yellow-400"
+                          : e.rank === 2
+                            ? "text-zinc-300"
+                            : e.rank === 3
+                              ? "text-amber-600"
+                              : "text-zinc-600"
+                      }`}
+                    >
+                      #{e.rank}
+                    </span>
+                    <span
+                      className={`text-sm font-medium ${e.userId === user?.id ? "text-[#FF9FFC]" : "text-zinc-300"}`}
+                    >
+                      {e.name} {e.userId === user?.id && "(You)"}
+                    </span>
+                    <span className="text-sm font-mono text-zinc-400 text-right">
+                      {e.score}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          <Link
+            href="/contests"
+            className="text-violet-400 text-sm hover:underline"
+          >
             ← Back to contests
           </Link>
         </div>
@@ -370,55 +459,68 @@ export default function ContestWorkspacePage() {
     <div className="h-screen bg-[#09050d] flex flex-col overflow-hidden relative">
       <header className="h-12 border-b border-zinc-800/60 bg-[#110a17]/80 backdrop-blur-md shrink-0 flex items-center justify-between px-4 z-40">
         <div className="flex items-center gap-3">
-          <Link href="/contests" className="text-zinc-400 hover:text-white transition">
+          <Link
+            href="/contests"
+            className="text-zinc-400 hover:text-white transition"
+          >
             <VscChevronDown className="rotate-90" size={18} />
           </Link>
-          
+
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-white tracking-tight">
-              Challenge: {progress?.currentChallenge?.title ?? (isCompleted ? "Contest completed" : "Workspace")}
+              Challenge:{" "}
+              {progress?.currentChallenge?.title ??
+                (isCompleted ? "Contest completed" : "Workspace")}
             </span>
-            {progress?.currentChallenge && contestDetails?.contestToChallengeMapping && (
-              <span className="text-[10px] font-mono font-medium text-zinc-400 bg-white/5 px-2 py-0.5 rounded border border-zinc-800 hidden sm:block">
-                {progress.currentChallenge.index + 1} / {contestDetails.contestToChallengeMapping.length}
-              </span>
-            )}
+            {progress?.currentChallenge &&
+              contestDetails?.contestToChallengeMapping && (
+                <span className="text-[10px] font-mono font-medium text-zinc-400 bg-white/5 px-2 py-0.5 rounded border border-zinc-800 hidden sm:block">
+                  {progress.currentChallenge.index + 1} /{" "}
+                  {contestDetails.contestToChallengeMapping.length}
+                </span>
+              )}
           </div>
         </div>
-
-        
 
         <div className="flex items-center gap-4">
           {activeTab === "code" && saveStatus && !isEndedContest && (
             <div className="hidden sm:flex items-center gap-1.5 text-xs font-mono text-zinc-500 mr-2">
               {saveStatus === "Saving..." ? (
-                <><VscCloudUpload className="animate-pulse" /> Saving...</>
+                <>
+                  <VscCloudUpload className="animate-pulse" /> Saving...
+                </>
               ) : (
-                <><VscCheck className="text-emerald-500" /> Saved locally</>
+                <>
+                  <VscCheck className="text-emerald-500" /> Saved locally
+                </>
               )}
             </div>
           )}
 
           {timeLeft !== null && (
-            <div className={`text-xs font-mono font-bold px-3 py-1.5 rounded-lg border transition-colors ${
-              timeLeft > 0 
-                ? "bg-[#1a1122] text-[#FF9FFC] border-[#FF9FFC]/30 shadow-[0_0_10px_rgba(255,159,252,0.1)]" 
-                : "bg-red-500/10 text-red-400 border-red-500/20"
-            }`}>
+            <div
+              className={`text-xs font-mono font-bold px-3 py-1.5 rounded-lg border transition-colors ${
+                timeLeft > 0
+                  ? "bg-[#1a1122] text-[#FF9FFC] border-[#FF9FFC]/30 shadow-[0_0_10px_rgba(255,159,252,0.1)]"
+                  : "bg-red-500/10 text-red-400 border-red-500/20"
+              }`}
+            >
               {timeLeft > 0 ? `⏱ ${formatTime(timeLeft)}` : "CONTEST ENDED"}
             </div>
           )}
 
           {/* Submit Button (Now gets blocked when time is up) */}
-          {activeTab === "code" && !isCompleted && progress?.currentChallenge && (
-            <button
-              onClick={handleSubmit}
-              disabled={submitting || timeLeft === 0} // <-- BLOCKS SUBMISSION HERE
-              className="bg-white hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold text-xs px-4 py-1.5 rounded-lg transition-all shadow-[0_0_10px_rgba(255,255,255,0.1)]"
-            >
-              {submitting ? "Grading..." : "Submit Code"}
-            </button>
-          )}
+          {activeTab === "code" &&
+            !isCompleted &&
+            progress?.currentChallenge && (
+              <button
+                onClick={handleSubmit}
+                disabled={submitting || timeLeft === 0} // <-- BLOCKS SUBMISSION HERE
+                className="bg-white hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold text-xs px-4 py-1.5 rounded-lg transition-all shadow-[0_0_10px_rgba(255,255,255,0.1)]"
+              >
+                {submitting ? "Grading..." : "Submit Code"}
+              </button>
+            )}
         </div>
       </header>
 
@@ -570,7 +672,8 @@ export default function ContestWorkspacePage() {
                 <span>Developer</span>
                 <span className="text-right">Score</span>
               </div>
-              <div className="divide-y divide-zinc-800/40">
+
+              <div className="divide-y divide-zinc-800/40 max-h-[520px] overflow-y-auto">
                 {leaderboard.length === 0 ? (
                   <p className="text-sm text-zinc-500 text-center py-12">
                     No submissions yet. Be the first.
@@ -621,7 +724,7 @@ export default function ContestWorkspacePage() {
                 Submission History
               </h1>
             </div>
-            
+
             <div className="bg-[#110a17]/60 border border-[#4d2562]/40 rounded-2xl p-6 backdrop-blur-md">
               <SubmissionHistory history={history} loading={historyLoading} />
             </div>

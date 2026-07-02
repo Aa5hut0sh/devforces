@@ -82,7 +82,6 @@ export async function gradeSubmission(submissionId: string) {
           challenge.testSpec as unknown as TestCase[],
         );
       })(),
-      // separate ceiling: startup (15s) + test run time
       challenge.timeLimitSeconds * 1000 + 20_000,
     );
 
@@ -119,6 +118,40 @@ export async function gradeSubmission(submissionId: string) {
           submission.userId,
           pointsDelta,
         );
+
+        await prisma.leaderboard.upsert({
+          where: {
+            contestId_userId: {
+              contestId: contest.id,
+              userId: submission.userId,
+            },
+          },
+          update: {
+            score: { increment: pointsDelta },
+            updatedAt: new Date(),
+          },
+          create: {
+            contestId: contest.id,
+            userId: submission.userId,
+            score: earnedPoints,
+            rank: 0,
+          },
+        });
+
+        const allEntries = await prisma.leaderboard.findMany({
+          where: { contestId: contest.id },
+          orderBy: { score: "desc" },
+        });
+
+        await Promise.all(
+          allEntries.map((entry, index) =>
+            prisma.leaderboard.update({
+              where: { id: entry.id },
+              data: { rank: index + 1 },
+            }),
+          ),
+        );
+
         const snapshot = await getLeaderboardSnapshot(contest.id);
         await publishLeaderboardUpdate(contest.id, snapshot);
       }
