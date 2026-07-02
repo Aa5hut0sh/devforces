@@ -114,7 +114,6 @@ export default function ContestsPage() {
   return (
     <div className="min-h-screen bg-[#09050d] relative overflow-hidden">
       
-      {/* Decorative Background Glows */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#4d2562]/10 blur-[150px] rounded-full pointer-events-none z-0" />
 
       {/* Main Content (added pt-28 to clear the global navbar) */}
