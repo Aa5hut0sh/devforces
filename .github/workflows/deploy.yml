@@ -45,7 +45,7 @@ jobs:
             sudo nginx -t && sudo systemctl reload nginx
             
             echo "Restarting services"
-            pm2 restart devforces-api devforces-worker devforces-web
-            pm2 save
+            /home/${{ secrets.SERVER_USERNAME }}/.nvm/versions/node/v20.20.2/bin/pm2 restart devforces-api devforces-worker devforces-web
+            /home/${{ secrets.SERVER_USERNAME }}/.nvm/versions/node/v20.20.2/bin/pm2 save
             
             echo "Deploy complete"
