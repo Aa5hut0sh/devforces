@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "devforces-api",
-      cwd: "/home/ubuntu/devforces/apps/api",
+      cwd: "/home/azureuser/devforces/apps/api",
       script: "bun",
       args: "run index.ts",
       env: {
@@ -12,12 +12,12 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: "512M",
-      error_file: "/home/ubuntu/logs/api-error.log",
-      out_file: "/home/ubuntu/logs/api-out.log",
+      error_file: "/home/azureuser/logs/api-error.log",
+      out_file: "/home/azureuser/logs/api-out.log",
     },
     {
       name: "devforces-worker",
-      cwd: "/home/ubuntu/devforces/apps/worker",
+      cwd: "/home/azureuser/devforces/apps/worker",
       script: "bun",
       args: "run index.ts",
       env: {
@@ -27,12 +27,12 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: "300M",
-      error_file: "/home/ubuntu/logs/worker-error.log",
-      out_file: "/home/ubuntu/logs/worker-out.log",
+      error_file: "/home/azureuser/logs/worker-error.log",
+      out_file: "/home/azureuser/logs/worker-out.log",
     },
     {
       name: "devforces-web",
-      cwd: "/home/ubuntu/devforces/apps/web",
+      cwd: "/home/azureuser/devforces/apps/web",
       script: "bun",
       args: "run start",
       env: {
@@ -43,8 +43,8 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: "512M",
-      error_file: "/home/ubuntu/logs/web-error.log",
-      out_file: "/home/ubuntu/logs/web-out.log",
+      error_file: "/home/azureuser/logs/web-error.log",
+      out_file: "/home/azureuser/logs/web-out.log",
     },
   ],
 };
