@@ -25,6 +25,11 @@ enum SubmissionStatus {
   ERROR
 }
 
+enum ContestMode {
+  CONTEST  
+  PRACTICE  
+}
+
 model User {
   id          String        @id @default(uuid())
   name        String
@@ -43,6 +48,7 @@ model Contest {
   boilerplateId             String                     
   startTime                 DateTime
   endTime                   DateTime
+  mode                      ContestMode                                  @default(CONTEST)
   leaderboard               Leaderboard[]
   contestToChallengeMapping ContestToChallengeMapping[]
   createdAt                 DateTime                    @default(now())

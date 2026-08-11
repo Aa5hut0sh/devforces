@@ -64,6 +64,12 @@ export default function RootPage() {
           >
             Get started
           </Link>
+          <Link
+            href="/about"
+            className="w-full sm:w-auto text-white bg-white/10 backdrop-blur-md px-8 py-3.5 rounded-xl font-semibold hover:bg-white/20 transition-colors active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+          >
+            About DevForces
+          </Link>
           
         </div>
       </div>

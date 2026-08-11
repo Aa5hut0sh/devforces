@@ -13,6 +13,7 @@
     "@react-oauth/google": "^0.13.5",
     "axios": "^1.18.0",
     "face-api.js": "^0.22.2",
+    "gsap": "^3.15.0",
     "motion": "^12.40.0",
     "next": "16.2.9",
     "notion-client": "^7.10.0",

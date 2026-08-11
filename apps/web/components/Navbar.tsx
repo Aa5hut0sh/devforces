@@ -43,6 +43,12 @@ export default function Navbar() {
           <Link href="/contests" className="text-md font-medium text-zinc-300 hover:text-white transition-colors">
             Contests
           </Link>
+          <Link href="/practice" className="text-md font-medium text-zinc-300 hover:text-white transition-colors">
+            Practice
+          </Link>
+          <Link href="/about" className="text-md font-medium text-zinc-300 hover:text-white transition-colors">
+            About
+          </Link>
         </div>
 
         <div className="flex items-center gap-5">

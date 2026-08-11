@@ -6,11 +6,13 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { contestService } from "@/services/contest.service";
 import type { Contest } from "@/lib/types";
+import DecorativeIcons from "@/components/DecorativeIcons";
 
 const STATUS_STYLES = {
-  LIVE: "bg-[#FF9FFC]/10 text-[#FF9FFC] border-[#FF9FFC]/30 shadow-[0_0_10px_rgba(255,159,252,0.2)] animate-pulse",
+  LIVE: "bg-[#FF9FFC]/10 text-[#FF9FFC] border-[#FF9FFC]/30",
   UPCOMING: "bg-violet-500/10 text-violet-300 border-violet-500/30",
   ENDED: "bg-zinc-800/40 text-zinc-500 border-zinc-700/50",
+  PRACTICE: "bg-cyan-500/10 text-cyan-300 border-cyan-500/30",
 };
 
 function formatDate(iso: string) {
@@ -29,33 +31,46 @@ function ContestCard({ contest }: { contest: Contest }) {
 
   return (
     <Link
-      href={`/contests/${contest.id}`} // ALWAYS route to the page
-      className={`group block backdrop-blur-md border rounded-2xl p-6 transition-all duration-300 ${
+      href={`/contests/${contest.id}`}
+      className={`group flex flex-col h-full min-h-[20px] backdrop-blur-md border rounded-2xl p-6 transition-all duration-300 ${
         isEnded
-          ? "bg-[#0a0a0c]/60 border-zinc-800/60 hover:bg-[#110a17]/80 hover:border-zinc-700/80 hover:-translate-y-0.5" // Archived but interactive
-          : "bg-[#1a1122]/60 border-[#4d2562]/40 hover:border-[#FF9FFC]/50 hover:bg-[#251830]/80 hover:shadow-[0_0_25px_rgba(255,159,252,0.1)] hover:-translate-y-1"
+          ? "bg-[#0a0a0c]/60 border-zinc-800/60 hover:bg-[#110a17]/80 hover:border-zinc-700/80"
+          : "bg-[#1a1122]/60 border-[#4d2562]/40 hover:border-[#FF9FFC]/40 hover:bg-[#251830]/80"
       }`}
     >
       <div className="flex items-start justify-between gap-4 mb-4">
-        <h2 className={`font-semibold transition text-lg tracking-tight leading-snug ${isEnded ? "text-zinc-400 group-hover:text-zinc-200" : "text-zinc-100 group-hover:text-white"}`}>
+        <h2
+          className={`font-semibold transition text-lg tracking-tight leading-snug ${
+            isEnded ? "text-zinc-400 group-hover:text-zinc-200" : "text-zinc-100 group-hover:text-white"
+          }`}
+        >
           {contest.title}
         </h2>
-        <span className={`shrink-0 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border tracking-wider ${STATUS_STYLES[status]}`}>
+        <span
+          className={`shrink-0 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border tracking-wider ${STATUS_STYLES[status]}`}
+        >
           {status === "LIVE" ? "LIVE" : status}
         </span>
       </div>
 
-      {contest.description && (
-        <p className="text-sm text-zinc-500 mb-6 line-clamp-2 leading-relaxed">
-          {contest.description}
-        </p>
-      )}
+      {/* Description: fixed clamp, takes remaining space so footer aligns */}
+      <p className="text-sm text-zinc-500 mb-6 line-clamp-2 leading-relaxed flex-1">
+        {contest.description || "\u00A0"}
+      </p>
 
-      <div className="flex items-center gap-3 text-xs font-medium text-zinc-600 bg-black/30 w-fit px-3 py-1.5 rounded-lg border border-white/5">
-        <span>Starts {formatDate(contest.startTime)}</span>
-        <span className="text-zinc-800">|</span>
-        <span>Ends {formatDate(contest.endTime)}</span>
-      </div>
+      {contest.mode !== "PRACTICE" && (
+        <div className="flex items-center gap-3 text-xs font-medium text-zinc-600 bg-black/30 w-fit px-3 py-1.5 rounded-lg border border-white/5 mt-auto">
+          <span>Starts {formatDate(contest.startTime)}</span>
+          <span className="text-zinc-800">|</span>
+          <span>Ends {formatDate(contest.endTime)}</span>
+        </div>
+      )}
+      {contest.mode === "PRACTICE" && (
+        <div className="flex items-center gap-2 text-xs font-mono text-zinc-600 mt-auto">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block" />
+          No time limit · Open ended
+        </div>
+      )}
     </Link>
   );
 }
@@ -110,10 +125,11 @@ export default function ContestsPage() {
   const live = contests.filter((c) => c.status === "LIVE");
   const upcoming = contests.filter((c) => c.status === "UPCOMING");
   const ended = contests.filter((c) => c.status === "ENDED");
+  const practice = contests.filter((c) => c.mode === "PRACTICE");
 
   return (
-    <div className="min-h-screen bg-[#09050d] relative overflow-hidden">
-      
+    <div className="min-h-screen bg-[#09050d] relative overflow-hidden scroll-smooth">
+      <DecorativeIcons />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#4d2562]/10 blur-[150px] rounded-full pointer-events-none z-0" />
 
       {/* Main Content (added pt-28 to clear the global navbar) */}
@@ -147,8 +163,8 @@ export default function ContestsPage() {
           </div>
         ) : (
           <div className="space-y-12">
-            
-            {live.length > 0 && (
+
+            {live.length > 0 ? (
               <section>
                 <div className="flex items-center gap-3 mb-5">
                   <h2 className="text-sm font-bold text-white uppercase tracking-widest">Live Now</h2>
@@ -157,6 +173,31 @@ export default function ContestsPage() {
                   {live.map((c) => <ContestCard key={c.id} contest={c} />)}
                 </div>
               </section>
+            ) : (
+              <section className="text-center py-14 bg-[#1a1122]/30 border border-[#4d2562]/20 rounded-3xl backdrop-blur-sm">
+                <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-xl">⏳</span>
+                </div>
+                <p className="font-semibold text-white mb-1">No live contests right now</p>
+                <p className="text-sm text-zinc-500 mb-6">
+                  Sharpen your skills in the meantime with an open-ended practice contest.
+                </p>
+                {practice.length > 0 ? (
+                  <a
+                    href="#practice"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#FF9FFC] bg-[#FF9FFC]/10 border border-[#FF9FFC]/30 px-5 py-2.5 rounded-xl hover:bg-[#FF9FFC]/20 transition-colors"
+                  >
+                    Try Practice Contests
+                  </a>
+                ) : (
+                  <Link
+                    href="/practice"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#FF9FFC] bg-[#FF9FFC]/10 border border-[#FF9FFC]/30 px-5 py-2.5 rounded-xl hover:bg-[#FF9FFC]/20 transition-colors"
+                  >
+                    Try Practice Contests
+                  </Link>
+                )}
+              </section>
             )}
             
             {upcoming.length > 0 && (
@@ -164,6 +205,15 @@ export default function ContestsPage() {
                 <h2 className="text-sm font-bold text-zinc-300 uppercase tracking-widest mb-5 ml-1">Upcoming</h2>
                 <div className="grid gap-6 sm:grid-cols-2">
                   {upcoming.map((c) => <ContestCard key={c.id} contest={c} />)}
+                </div>
+              </section>
+            )}
+
+            {practice.length > 0 && (
+              <section id="practice" className="scroll-mt-28">
+                <h2 className="text-sm font-bold text-cyan-300 uppercase tracking-widest mb-5 ml-1">Practice</h2>
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {practice.map((c) => <ContestCard key={c.id} contest={c} />)}
                 </div>
               </section>
             )}

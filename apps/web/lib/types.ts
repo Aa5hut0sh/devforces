@@ -29,10 +29,12 @@ export interface Contest {
   description?: string;
   startTime: string;
   endTime: string;
-  status: "UPCOMING" | "LIVE" | "ENDED";
+  status: "UPCOMING" | "LIVE" | "ENDED" | "PRACTICE";
+  mode: "CONTEST" | "PRACTICE";
 }
 
 export interface ContestDetail extends Contest {
+  mode: "CONTEST" | "PRACTICE";
   contestToChallengeMapping: {
     index: number;
     challenge: Pick<Challenge, "id" | "title" | "maxPoints" | "editableFiles">;
@@ -169,6 +171,7 @@ export interface CreateContestPayload {
   boilerplateId: string;
   startTime: string; // ISO string
   endTime: string;
+  mode?: "CONTEST" | "PRACTICE";
 }
 
 export interface UpdateContestPayload {
@@ -216,12 +219,4 @@ export interface AdminChallenge {
   testSpec: TestSpec[];
   timeLimitSeconds: number;
   createdAt: string;
-}
-
-
-export interface ContestDetail extends Contest {
-  contestToChallengeMapping: {
-    index: number;
-    challenge: Pick<Challenge, "id" | "title" | "maxPoints" | "editableFiles">;
-  }[];
 }

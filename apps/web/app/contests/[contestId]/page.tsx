@@ -88,15 +88,24 @@ export default function ContestWorkspacePage() {
     null,
   );
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [contestError, setContestError] = useState<string | null>(null);
+  const [contestLoading, setContestLoading] = useState(true);
 
   useEffect(() => {
-    if (!contestId || !isAuthenticated) return;
+  if (!contestId || !isAuthenticated) return;
     api
       .get(`/contests/${contestId}`)
       .then((res) => {
         setContestDetails(res.data.contest || res.data);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (err?.response?.status === 404) {
+          setContestError("Contest not found.");
+        } else {
+          setContestError("Failed to load contest.");
+        }
+      })
+      .finally(() => setContestLoading(false));
   }, [contestId, isAuthenticated]);
 
   useEffect(() => {
@@ -132,6 +141,7 @@ export default function ContestWorkspacePage() {
   }, [editedFiles, contestId]);
 
   const isEndedContest = contestDetails?.status === "ENDED" || timeLeft === 0;
+  const isPractice = contestDetails?.mode === "PRACTICE";
 
   // ── Auth guard
   useEffect(() => {
@@ -326,10 +336,32 @@ export default function ContestWorkspacePage() {
     });
   }
 
-  if (isLoading || loadingProgress || !isAuthenticated) {
+  if (isLoading || loadingProgress || contestLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#09050d] flex items-center justify-center">
         <div className="w-6 h-6 rounded-full border-2 border-[#4d2562] border-t-[#FF9FFC] animate-spin" />
+      </div>
+    );
+  }
+
+  if (contestError) {
+    return (
+      <div className="min-h-screen bg-[#09050d] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-xl font-bold text-white">Contest not found</p>
+          <p className="text-zinc-500 font-mono text-sm">
+            This contest doesn't exist or has been removed.
+          </p>
+          <div className="flex items-center justify-center gap-4 pt-2">
+            <Link href="/contests" className="text-violet-400 text-sm hover:underline">
+              ← Back to contests
+            </Link>
+            <span className="text-zinc-700">·</span>
+            <Link href="/practice" className="text-cyan-400 text-sm hover:underline">
+              Practice Contests →
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -358,7 +390,7 @@ export default function ContestWorkspacePage() {
     );
   }
 
-  if (contestDetails && new Date() > new Date(contestDetails.endTime)) {
+  if (contestDetails && new Date() > new Date(contestDetails.endTime) && !isPractice) {
     return (
       <div className="min-h-screen bg-[#09050d] flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -460,7 +492,7 @@ export default function ContestWorkspacePage() {
       <header className="h-12 border-b border-zinc-800/60 bg-[#110a17]/80 backdrop-blur-md shrink-0 flex items-center justify-between px-4 z-40">
         <div className="flex items-center gap-3">
           <Link
-            href="/contests"
+            href={isPractice ? "/practice" : "/contests"}
             className="text-zinc-400 hover:text-white transition"
           >
             <VscChevronDown className="rotate-90" size={18} />
@@ -497,7 +529,7 @@ export default function ContestWorkspacePage() {
             </div>
           )}
 
-          {timeLeft !== null && (
+          {timeLeft !== null && contestDetails && contestDetails.mode !== "PRACTICE" && (
             <div
               className={`text-xs font-mono font-bold px-3 py-1.5 rounded-lg border transition-colors ${
                 timeLeft > 0
@@ -515,7 +547,7 @@ export default function ContestWorkspacePage() {
             progress?.currentChallenge && (
               <button
                 onClick={handleSubmit}
-                disabled={submitting || timeLeft === 0} // <-- BLOCKS SUBMISSION HERE
+                disabled={submitting || (timeLeft === 0 && !isPractice && !!contestDetails)} // <-- BLOCKS SUBMISSION HERE
                 className="bg-white hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold text-xs px-4 py-1.5 rounded-lg transition-all shadow-[0_0_10px_rgba(255,255,255,0.1)]"
               >
                 {submitting ? "Grading..." : "Submit Code"}
@@ -577,7 +609,7 @@ export default function ContestWorkspacePage() {
                     onChange={handleEditorChange}
                     beforeMount={handleEditorWillMount} // <--- IMPROVES SUGGESTIONS
                     options={{
-                      readOnly: !isEditable || timeLeft === 0,
+                      readOnly: !isEditable || (timeLeft === 0 && !isPractice && !!contestDetails),
                       fontSize: 14,
                       fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                       minimap: { enabled: false },

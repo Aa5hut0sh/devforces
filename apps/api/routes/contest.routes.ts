@@ -13,13 +13,16 @@ import {
   listContests,
   getContest,
   listChallenges,
+  listPracticeContests,
 } from "../controllers/contest.controller";
 
 const router = Router();
 
 // Public 
 router.get("/", authenticate, listContests);
+router.get("/practice", authenticate, listPracticeContests);
 router.get("/:id", authenticate, getContest);
+
 
 // Admin
 router.get("/admin/challenges", authenticate, isAdmin, listChallenges);

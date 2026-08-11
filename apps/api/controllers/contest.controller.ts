@@ -9,6 +9,7 @@ const createContestSchema = z
     boilerplateId: z.string().min(1),
     startTime: z.coerce.date(),
     endTime: z.coerce.date(),
+    mode: z.enum(["CONTEST", "PRACTICE"]).optional().default("CONTEST"),
   })
   .refine((d) => d.endTime > d.startTime, {
     message: "endTime must be after startTime",
@@ -21,6 +22,7 @@ const updateContestSchema = z.object({
   boilerplateId: z.string().min(1).optional(),
   startTime: z.coerce.date().optional(),
   endTime: z.coerce.date().optional(),
+  mode: z.enum(["CONTEST", "PRACTICE"]).optional(),
 });
 
 const testCaseSchema = z.object({
@@ -171,6 +173,7 @@ export const removeChallengeFromContest = async (req: Request, res: Response, ne
 export const listContests = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const contests = await prisma.contest.findMany({
+      where: { mode: "CONTEST" },
       select: { id: true, title: true, description: true, startTime: true, endTime: true },
       orderBy: { startTime: "desc" },
     });
@@ -199,6 +202,7 @@ export const getContest = async (req: Request, res: Response, next: NextFunction
         description: true,
         startTime: true,
         endTime: true,
+        mode: true,
         contestToChallengeMapping: {
           orderBy: { index: "asc" },
           select: {
@@ -238,4 +242,22 @@ export const listChallenges = async (_req: Request, res: Response, next: NextFun
     });
     res.json({ success: true, challenges });
   } catch (err) { next(err); }
+};
+
+
+export const listPracticeContests = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const contests = await prisma.contest.findMany({
+      where: { mode: "PRACTICE" },
+      select: { id: true, title: true, description: true, startTime: true, endTime: true, mode: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json({
+      success: true,
+      contests: contests.map((c) => ({ ...c, status: "PRACTICE" })),
+    });
+  } catch (err) {
+    next(err);
+  }
 };

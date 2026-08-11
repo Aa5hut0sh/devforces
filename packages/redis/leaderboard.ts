@@ -32,3 +32,24 @@ export async function getUserRankAndScore(contestId: string, userId: string) {
   if (rank === null || score === null) return null;
   return { rank: rank + 1, score: Number(score) };
 }
+
+export async function restoreLeaderboardFromDb(
+  contestId: string,
+  entries: Array<{ userId: string; score: number }>
+): Promise<void> {
+  if (entries.length === 0) return;
+
+  const key = leaderboardKey(contestId);
+
+  // delete stale sorted set first
+  await redis.del(key);
+
+  // rebuild in one pipeline
+  const pipeline = redis.pipeline();
+  for (const e of entries) {
+    pipeline.zadd(key, e.score, e.userId);
+  }
+  await pipeline.exec();
+
+  console.log(`[redis] restored leaderboard:${contestId} with ${entries.length} entries`);
+}

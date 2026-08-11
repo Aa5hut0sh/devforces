@@ -15,4 +15,9 @@ export const contestService = {
     );
     return data.contest;
   },
+
+  async listPractice(): Promise<Contest[]> {
+    const { data } = await api.get<{ success: boolean; contests: Contest[] }>("/contests/practice");
+    return data.contests;
+  },
 };

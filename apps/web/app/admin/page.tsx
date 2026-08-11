@@ -71,11 +71,17 @@ const formatForInput = (iso: string) => (iso ? new Date(iso).toISOString().slice
 
 // ─── Contest Form (Create & Edit) ─────────────────────────────────────────────
 
-function ContestForm({ initialData, onSaved, onCancel }: { initialData?: AdminContest | null, onSaved: (c: AdminContest, isEdit: boolean) => void, onCancel?: () => void }) {
+function ContestForm({ initialData, onSaved, onCancel }: {
+  initialData?: AdminContest | null;
+  onSaved: (c: AdminContest, isEdit: boolean) => void;
+  onCancel?: () => void;
+}) {
   const [form, setForm] = useState<CreateContestPayload>({
-    title: "", description: "", boilerplateId: "node-express-v1", startTime: "", endTime: "",
+    title: "", description: "", boilerplateId: "node-express-v1",
+    startTime: "", endTime: "", mode: "CONTEST",
   });
   const [loading, setLoading] = useState(false);
+  const isPractice = form.mode === "PRACTICE";
 
   useEffect(() => {
     if (initialData) {
@@ -85,9 +91,13 @@ function ContestForm({ initialData, onSaved, onCancel }: { initialData?: AdminCo
         boilerplateId: initialData.boilerplateId,
         startTime: formatForInput(initialData.startTime),
         endTime: formatForInput(initialData.endTime),
+        mode: initialData.mode ?? "CONTEST",
       });
     } else {
-      setForm({ title: "", description: "", boilerplateId: "node-express-v1", startTime: "", endTime: "" });
+      setForm({
+        title: "", description: "", boilerplateId: "node-express-v1",
+        startTime: "", endTime: "", mode: "CONTEST",
+      });
     }
   }, [initialData]);
 
@@ -95,21 +105,44 @@ function ContestForm({ initialData, onSaved, onCancel }: { initialData?: AdminCo
     return (v: string) => setForm((f) => ({ ...f, [key]: v }));
   }
 
+  function togglePractice(on: boolean) {
+    if (on) {
+      setForm((f) => ({
+        ...f,
+        mode: "PRACTICE",
+        startTime: new Date().toISOString().slice(0, 16),
+        endTime: "2099-12-31T23:59",
+      }));
+    } else {
+      setForm((f) => ({ ...f, mode: "CONTEST", startTime: "", endTime: "" }));
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.title || !form.startTime || !form.endTime) return toast.error("Title and times are required.");
-    if (new Date(form.endTime) <= new Date(form.startTime)) return toast.error("End time must be after start time.");
-    
+    if (!form.title) return toast.error("Title is required.");
+    if (!isPractice && (!form.startTime || !form.endTime)) {
+      return toast.error("Title and times are required.");
+    }
+    if (!isPractice && new Date(form.endTime) <= new Date(form.startTime)) {
+      return toast.error("End time must be after start time.");
+    }
+
     setLoading(true);
     const tid = toast.loading(initialData ? "Updating contest..." : "Creating contest...");
     try {
-      const contest = initialData 
+      const contest = initialData
         ? await adminService.updateContest(initialData.id, form)
         : await adminService.createContest(form);
-      
+
       onSaved(contest, !!initialData);
       toast.success(`Contest ${initialData ? "updated" : "created"}!`, { id: tid });
-      if (!initialData) setForm({ title: "", description: "", boilerplateId: "node-express-v1", startTime: "", endTime: "" });
+      if (!initialData) {
+        setForm({
+          title: "", description: "", boilerplateId: "node-express-v1",
+          startTime: "", endTime: "", mode: "CONTEST",
+        });
+      }
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Failed to save contest.", { id: tid });
     } finally {
@@ -120,18 +153,52 @@ function ContestForm({ initialData, onSaved, onCancel }: { initialData?: AdminCo
   return (
     <Card className="max-h-[600px] overflow-y-auto no-scrollbar">
       <div className="flex justify-between items-center mb-4">
-         <SectionTitle>{initialData ? "Edit Contest" : "New Contest"}</SectionTitle>
-         {initialData && <Btn variant="ghost" onClick={onCancel}>Cancel Edit</Btn>}
+        <SectionTitle>{initialData ? "Edit Contest" : "New Contest"}</SectionTitle>
+        {initialData && <Btn variant="ghost" onClick={onCancel}>Cancel Edit</Btn>}
       </div>
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <InputField label="Title" value={form.title} onChange={set("title")} placeholder="Contest #1" required />
         <InputField label="Description" value={form.description ?? ""} onChange={set("description")} />
         <InputField label="Boilerplate ID" value={form.boilerplateId} onChange={set("boilerplateId")} required />
-        <div className="grid grid-cols-2 gap-3">
-          <InputField label="Start time" type="datetime-local" value={form.startTime} onChange={set("startTime")} required />
-          <InputField label="End time" type="datetime-local" value={form.endTime} onChange={set("endTime")} required />
+
+        {/* Practice Mode Toggle */}
+        <div className="flex items-center justify-between bg-[#09050d] border border-zinc-800 rounded-xl px-4 py-3">
+          <div>
+            <p className="text-sm text-zinc-200 font-medium">Practice mode</p>
+            <p className="text-[11px] text-zinc-500 mt-0.5">No time limit · Always open · Fills times automatically</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => togglePractice(!isPractice)}
+            className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
+              isPractice ? "bg-cyan-500" : "bg-zinc-700"
+            }`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+              isPractice ? "translate-x-5" : "translate-x-0"
+            }`} />
+          </button>
         </div>
-        <Btn type="submit" disabled={loading}>{loading ? "Saving…" : initialData ? "Update Contest" : "Create Contest"}</Btn>
+
+        {/* Time fields — hidden and auto-filled in practice mode */}
+        {!isPractice && (
+          <div className="grid grid-cols-2 gap-3">
+            <InputField label="Start time" type="datetime-local" value={form.startTime} onChange={set("startTime")} required />
+            <InputField label="End time" type="datetime-local" value={form.endTime} onChange={set("endTime")} required />
+          </div>
+        )}
+
+        {isPractice && (
+          <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 rounded-xl px-4 py-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 inline-block shrink-0" />
+            Start: now · End: Dec 31, 2099 — set automatically
+          </div>
+        )}
+
+        <Btn type="submit" disabled={loading}>
+          {loading ? "Saving…" : initialData ? "Update Contest" : "Create Contest"}
+        </Btn>
       </form>
     </Card>
   );
