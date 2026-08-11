@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO_DIR="/home/ubuntu/devforces"
+REPO_DIR="/home/azureuser/devforces"
 NGINX_CONF="/etc/nginx/sites-available/devforces"
 NGINX_ENABLED="/etc/nginx/sites-enabled/devforces"
 

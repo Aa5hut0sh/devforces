@@ -11,7 +11,7 @@ const NODE_BIN = (() => {
   } catch {
     return process.platform === "win32"
       ? "node"
-      : "/home/ubuntu/.nvm/versions/node/v20.20.2/bin/node";
+      : "/home/azureuser/.nvm/versions/node/v20.20.2/bin/node";
   }
 })();
 
