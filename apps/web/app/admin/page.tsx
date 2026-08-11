@@ -477,9 +477,10 @@ export default function AdminPage() {
   const loadData = useCallback(async () => {
     try {
       const rawContests = await contestService.list();
+      const rawPracticeContests = await contestService.listPractice();
       const { data } = await api.get<{ challenges: AdminChallenge[] }>("/contests/admin/challenges");
       setChallenges(data.challenges);
-      setContests(rawContests as unknown as AdminContest[]);
+      setContests([...rawContests, ...rawPracticeContests] as unknown as AdminContest[]);
     } catch {}
     setFetching(false);
   }, []);

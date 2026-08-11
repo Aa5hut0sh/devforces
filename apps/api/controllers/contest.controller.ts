@@ -173,6 +173,7 @@ export const removeChallengeFromContest = async (req: Request, res: Response, ne
 export const listContests = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const contests = await prisma.contest.findMany({
+      where: { mode: "CONTEST" },
       select: { id: true, title: true, description: true, startTime: true, endTime: true },
       orderBy: { startTime: "desc" },
     });
