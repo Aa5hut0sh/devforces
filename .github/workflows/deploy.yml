@@ -19,8 +19,13 @@ jobs:
           script: |
             set -e
             
+            # 1. Load NVM so the system knows where Node and PM2 are
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            # 2. Load Bun
             export BUN_INSTALL="$HOME/.bun"
-            export PATH="$BUN_INSTALL/bin:$HOME/.npm-global/bin:/usr/local/bin:$PATH"
+            export PATH="$BUN_INSTALL/bin:$PATH"
             
             cd /home/${{ secrets.SERVER_USERNAME }}/devforces
             
@@ -45,7 +50,8 @@ jobs:
             sudo nginx -t && sudo systemctl reload nginx
             
             echo "Restarting services"
-            /home/${{ secrets.SERVER_USERNAME }}/.nvm/versions/node/v20.20.2/bin/pm2 restart devforces-api devforces-worker devforces-web
-            /home/${{ secrets.SERVER_USERNAME }}/.nvm/versions/node/v20.20.2/bin/pm2 save
+            # Now you can just use pm2 normally!
+            pm2 restart devforces-api devforces-worker devforces-web
+            pm2 save
             
             echo "Deploy complete"
